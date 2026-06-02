@@ -51,7 +51,6 @@ const bulkCreateNotes = async (req, res) => {
       });
     }
 
-    // Insert many notes
     const createdNotes = await Note.insertMany(notes);
 
     return res.status(201).json({
@@ -60,7 +59,6 @@ const bulkCreateNotes = async (req, res) => {
       data: createdNotes
     });
   } catch (error) {
-    // If validation fails (e.g. missing title/content in any note)
     if (error.name === "ValidationError") {
       return res.status(400).json({
         success: false,
@@ -76,7 +74,27 @@ const bulkCreateNotes = async (req, res) => {
   }
 };
 
+// 3. Get all notes (GET /api/notes)
+const getAllNotes = async (req, res) => {
+  try {
+    const notes = await Note.find();
+    
+    return res.status(200).json({
+      success: true,
+      message: "Notes fetched successfully",
+      data: notes
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unexpected server or database error",
+      data: null
+    });
+  }
+};
+
 module.exports = {
   createNote,
-  bulkCreateNotes
+  bulkCreateNotes,
+  getAllNotes
 };
