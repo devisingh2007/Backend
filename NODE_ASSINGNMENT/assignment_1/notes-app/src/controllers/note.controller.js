@@ -201,10 +201,70 @@ const replaceNote = async (req, res) => {
   }
 };
 
+// 6. Update specific fields (PATCH /api/notes/:id)
+const updateNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+        data: null
+      });
+    }
+
+    // Validate body is not empty
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No fields provided to update",
+        data: null
+      });
+    }
+
+    const updatedNote = await Note.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    // If note not found
+    if (!updatedNote) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Note updated successfully",
+      data: updatedNote
+    });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        data: null
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unexpected server or database error",
+      data: null
+    });
+  }
+};
+
 module.exports = {
   createNote,
   bulkCreateNotes,
   getAllNotes,
   getNoteById,
-  replaceNote
+  replaceNote,
+  updateNote
 };
